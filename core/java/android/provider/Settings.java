@@ -2629,6 +2629,12 @@ public final class Settings {
          */
         public static final String POWER_DIALOG_SHOW_AIRPLANE_TOGGLE = "power_dialog_show_airplane_toggle";
 
+       /**
+         * Whether power menu expanded desktop is enabled
+         * @hide
+         */
+        public static final String POWER_DIALOG_SHOW_EXPANDED_DESKTOP_ENABLED = "power_menu_expanded_desktop_enabled";
+
          /**
           * Used to determine if the NavBar should be enabled on devices that do not
           * otherwise have a NavBar
@@ -2891,6 +2897,12 @@ public final class Settings {
          * Shows the battery icon in the notification pull down
          */
         public static final String NOTIFICATION_BATTERY_DISPLAY = "notification_battery_display";
+
+	/**
+         * Statusbar State
+         * @hide
+         */
+        public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
 
         /**
          * custom lockscreen text color
