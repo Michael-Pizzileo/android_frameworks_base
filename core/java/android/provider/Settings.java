@@ -979,7 +979,7 @@ public final class Settings {
          * with that name.  Note that internally setting values are always
          * stored as strings, so this function converts the given value to a
          * string (1 or 0) before storing it.
-         *
+         * 
          * @param cr The ContentResolver to access.
          * @param name The name of the setting to modify.
          * @param value The new value for the setting.
@@ -1637,6 +1637,12 @@ public final class Settings {
         public static final String MODE_TABLET_UI = "mode_tabletui";
 
         /**
+         * If checked hide extra system bar stuff
+         * ie compatmode button and extra ime switcher.
+         */
+        public static final String HIDE_EXTRAS_SYSTEM_BAR = "hide_extras_system_bar";
+
+        /**
          * User interface mode. This is used to change from singlepane mode forcing it to
          * Change into multipane mode. Default is disabled. 
          */
@@ -2158,6 +2164,18 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_AUTO_ROTATE = "com.android.internal.R.config_enableLockScreenRotation";
 
+         /**
+         * Stores values for custom lockscreen targets
+         * @hide
+         */
+        public static final String LOCKSCREEN_TARGETS = "lockscreen_targets";
+
+        /**
+         * Number of custom lockscreen targets
+         * @hide
+         */
+        public static final String LOCKSCREEN_TARGET_AMOUNT = "lockscreen_target_amount";
+
         /**
          * URI for the low battery sound file.
          * @hide
@@ -2250,6 +2268,14 @@ public final class Settings {
          * @hide
          */
         public static final String MVNO_ROAMING = "mvno_roaming";
+
+        /**
+         * Control the display of the action overflow button within app UI.
+         * 0 = use system default
+         * 1 = force on
+         * @hide
+         */
+        public static final String UI_FORCE_OVERFLOW_BUTTON = "ui_force_overflow_button";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
@@ -2839,6 +2865,14 @@ public final class Settings {
          */
         public static final String STATUSBAR_CLOCK_WEEKDAY = "statusbar_clock_weekday";
 
+        /**
+         * @hide
+         * Vibrate when expanding notifications
+         * 0 - no vibrate
+         * 1 - vibrate
+         */
+        public static final String VIBRATE_NOTIF_EXPAND = "vibrate_notif_expand";
+
 
         /**
          * @hide
@@ -3097,6 +3131,11 @@ public final class Settings {
                 "navigation_custom_app_icon_5",
                 "navigation_custom_app_icon_6",
         };
+        
+        /**
+         * Widgets to show, should be separated by |
+         */
+        public static final String NAVIGATION_BAR_WIDGETS = "navigation_bar_widgets";
 
         /**
          * @hide
@@ -3241,6 +3280,14 @@ public final class Settings {
          * @hide
          */
         public static final String STATUSBAR_SIGNAL_CLUSTER_ALT = "statusbar_signal_cluster_alt";
+        
+        /**
+         * use Alt Activity Resolver Grid (GB style)
+         * boolean
+         *
+         * @hide
+         */
+        public static final String ACTIVITY_RESOLVER_USE_ALT = "activity_resolver_use_alt";
     }
 
     /**
@@ -5279,14 +5326,6 @@ public final class Settings {
 
         /** Timeout for package verification. {@hide} */
         public static final String PACKAGE_VERIFIER_TIMEOUT = "verifier_timeout";
-
-        /**
-         * use the lock screen timeout settings when the user turns the power off manually?
-         * Boolean value
-         *
-         * @hide
-         */
-        public static final String LOCK_SCREEN_LOCK_USER_OVERRIDE = "lock_screen_lock_suer_override";
 
         /** {@hide} */
         public static final String
