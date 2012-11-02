@@ -200,6 +200,7 @@ public class WifiStateMachine extends StateMachine {
     private PowerManager.WakeLock mWakeLock;
     private PowerManager.WakeLock mShutdownLock;
     private PowerManager.WakeLock mHungLock;
+    private PowerManager.WakeLock mSodLock;
     private PowerManager mPowerManager;
 
     private Context mContext;
@@ -670,6 +671,7 @@ public class WifiStateMachine extends StateMachine {
 	mWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
 	mShutdownLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WifiShutdownLock");
 	mHungLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WifiHungLock");
+	mSodLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WifiSodLock");
 
         mSuspendWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WifiSuspend");
         mSuspendWakeLock.setReferenceCounted(false);
@@ -759,6 +761,18 @@ public class WifiStateMachine extends StateMachine {
 		loge("lin : releaseHungLock");
 		if (mHungLock.isHeld())
 			mHungLock.release();
+	}
+
+	private void acquireSodLock() {
+		loge("lin : acquireSodLock");
+		if (!mSodLock.isHeld())
+			mSodLock.acquire();
+	}
+	
+	public void releaseSodLock() {
+		loge("lin : releaseSodLock");
+		if (mSodLock.isHeld())
+			mSodLock.release();
 	}
 
 	private boolean isScreenOn() {
@@ -1956,12 +1970,14 @@ public class WifiStateMachine extends StateMachine {
                     mSuspendWakeLock.release();
                     break;
                 case WifiMonitor.DRIVER_HUNG_EVENT:
-                    //if (isScreenOn()) {
-                        acquireHungLock();
-                        setWifiEnabled(false);
-                        setWifiEnabled(true);
-                        releaseHungLock();
-                    //}
+		    if (isScreenOn()) {
+			acquireHungLock();
+			setWifiEnabled(false);
+			setWifiEnabled(true);
+			releaseHungLock();
+		    } else {
+			setWifiEnabled(false);
+		    }
                     break;
                 case WifiManager.CONNECT_NETWORK:
                     replyToMessage(message, WifiManager.CONNECT_NETWORK_FAILED,
@@ -2052,7 +2068,7 @@ public class WifiStateMachine extends StateMachine {
                 public void run() {
                     mWakeLock.acquire();
 		    if (!isScreenOn()) {
-			acquireShutdownLock();
+			acquireSodLock();
 		    }
                     //enabling state
                     switch(message.arg1) {
@@ -2182,6 +2198,7 @@ public class WifiStateMachine extends StateMachine {
                     if (DBG) log(getName() + message.toString() + "\n");
                     mWakeLock.acquire();
                     if(mWifiNative.unloadDriver()) {
+			releaseSodLock();
                         if (DBG) log("Driver unload successful");
                         sendMessage(CMD_UNLOAD_DRIVER_SUCCESS);
 
@@ -2411,10 +2428,10 @@ public class WifiStateMachine extends StateMachine {
                     acquireHungLock();
                     mWifiNative.killSupplicant();
                     mWifiNative.closeSupplicantConnection();
-                    //if (isScreenOn()) {
+                    if (isScreenOn()) {
                         setWifiEnabled(false);
                         setWifiEnabled(true);
-                    //}  
+                    }  
                     mNetworkInfo.setIsAvailable(false);
                     handleNetworkDisconnect();
                     sendSupplicantConnectionChangedBroadcast(false);
@@ -2813,6 +2830,7 @@ public class WifiStateMachine extends StateMachine {
                     mWakeLock.release();
 		    setWifiEnabled(false);
 		    releaseShutdownLock();
+		    releaseSodLock();
                     break;
                 case CMD_START_PACKET_FILTERING:
                     if (message.arg1 == MULTICAST_V6) {
