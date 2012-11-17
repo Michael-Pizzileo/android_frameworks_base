@@ -155,11 +155,11 @@
     <string name="global_action_lock" msgid="2844945191792119712">"Bloqueo de pantalla"</string>
     <string name="global_action_power_off" msgid="4471879440839879722">"Apagar"</string>
     <string name="global_action_toggle_silent_mode" msgid="8219525344246810925">"Modo silencio"</string>
-    <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"El sonido está desactivado. Activar"</string>
-    <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"El sonido está activado. Desactivar"</string>
+    <string name="global_action_silent_mode_on_status" msgid="3289841937003758806">"El sonido está desactivado"</string>
+    <string name="global_action_silent_mode_off_status" msgid="1506046579177066419">"El sonido está activado"</string>
     <string name="global_actions_toggle_airplane_mode" msgid="5884330306926307456">"Modo avión"</string>
-    <string name="global_actions_airplane_mode_on_status" msgid="2719557982608919750">"Modo avión activado. Desactivar"</string>
-    <string name="global_actions_airplane_mode_off_status" msgid="5075070442854490296">"Modo avión desactivado. Activar"</string>
+    <string name="global_actions_airplane_mode_on_status" msgid="2719557982608919750">"Modo avión activado"</string>
+    <string name="global_actions_airplane_mode_off_status" msgid="5075070442854490296">"Modo avión desactivado"</string>
     <string name="status_bar_notification_info_overflow" msgid="5301981741705354993">"&gt; 999"</string>
     <string name="safeMode" msgid="2788228061547930246">"Modo seguro"</string>
     <string name="android_system_label" msgid="6577375335728551336">"Sistema Android"</string>
@@ -205,6 +205,8 @@
     <string name="permdesc_readCellBroadcasts" msgid="6361972776080458979">"Permite que la aplicación lea mensajes de difusión móvil que haya recibido el dispositivo. Las alertas de difusión móvil se envían en algunas ubicaciones para avisar de situaciones de emergencia. Es posible que las aplicaciones malintencionadas interfieran en el rendimiento o en el funcionamiento del dispositivo si se recibe una alerta de difusión móvil de emergencia."</string>
     <string name="permlab_sendSms" msgid="5600830612147671529">"enviar mensajes SMS"</string>
     <string name="permdesc_sendSms" msgid="7094729298204937667">"Permite que la aplicación envíe mensajes SMS, lo que puede generar cargos inesperados. Las aplicaciones malintencionadas pueden causarte gastos imprevistos al enviar mensajes sin tu confirmación."</string>
+    <string name="permlab_sendMockSms">enviar mensajes SMS simulados</string>
+    <string name="permdesc_sendMockSms">Permite que la aplicación envíe mensajes SMS simulados. La aplicación podrá enviar SMS simulados a otras aplicaciones de confianza. Las aplicaciones malintencionadas pueden enviar mensajes continuamente, interrumpiendo al usuario e incluso bloquear el sistema de notificación del dispositivo.</string>
     <string name="permlab_sendSmsNoConfirmation" msgid="4781483105951730228">"enviar mensajes SMS sin confirmación"</string>
     <string name="permdesc_sendSmsNoConfirmation" msgid="402569800862935907">"Permite que la aplicación envíe mensajes SMS, lo que puede generar cargos inesperados. Las aplicaciones malintencionadas pueden causarte gastos imprevistos al enviar mensajes sin tu confirmación."</string>
     <string name="permlab_readSms" msgid="8745086572213270480">"leer tus mensajes de texto (SMS o MMS)"</string>
@@ -1044,6 +1046,8 @@
     <string name="date_picker_dialog_title" msgid="5879450659453782278">"Establecer fecha"</string>
     <string name="date_time_set" msgid="5777075614321087758">"Establecer"</string>
     <string name="date_time_done" msgid="2507683751759308828">"Listo"</string>
+    <string name="color_picker">Selector de color</string>
+    <string name="color_picker_hint">Presione en el color para aplicar</string>
     <string name="default_permission_group" msgid="2690160991405646128">"Predeterminado"</string>
     <string name="no_permissions" msgid="7283357728219338112">"No es necesario ningún permiso"</string>
     <string name="perms_hide" msgid="7283915391320676226"><b>"Ocultar"</b></string>
@@ -1307,7 +1311,9 @@
     <string name="reboot_system" product="tablet">"Reiniciar tablet"</string>
     <string name="reboot_system" product="default">Reiniciar teléfono</string>
     <string name="global_action_screenshot">"Captura de pantalla"</string>
-    <string name="global_action_statusbar_status">Escritorio expandido</string>
+    <string name="global_actions_toggle_expanded_desktop_mode">Escritorio extendido</string>
+    <string name="global_actions_expanded_desktop_mode_on_status">Activado</string>
+    <string name="global_actions_expanded_desktop_mode_off_status">Desactivado</string>
     <string name="reboot_reboot">"Reiniciar"</string>
     <string name="reboot_recovery">"Modo Recovery"</string>
     <string name="reboot_bootloader">"Modo Bootloader"</string>

@@ -18,21 +18,32 @@ package com.android.systemui.statusbar.phone;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.StatusBarManager;
 import android.animation.LayoutTransition;
+import android.app.StatusBarManager;
+import android.database.ContentObserver;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.graphics.Rect;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
+import android.graphics.PorterDuff.Mode;
+import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Message;
 import android.os.ServiceManager;
+import android.provider.Settings;
 import android.util.AttributeSet;
 import android.util.ExtendedPropertiesUtils;
 import android.util.Slog;
+import android.util.Log;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.Surface;
@@ -42,6 +53,7 @@ import android.widget.ImageView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
+import android.view.animation.AlphaAnimation;
 import android.widget.LinearLayout;
 
 import com.android.internal.statusbar.IStatusBarService;
@@ -53,6 +65,7 @@ import com.android.systemui.recent.RecentsPanelView;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 
 public class NavigationBarView extends LinearLayout {
     final static boolean DEBUG = false;
@@ -88,6 +101,7 @@ public class NavigationBarView extends LinearLayout {
     private Drawable mBackIcon, mBackLandIcon, mBackAltIcon, mBackAltLandIcon;
     
     private DelegateViewHelper mDelegateHelper;
+    private Context mContext;
 
     // workaround for LayoutTransitions leaving the nav buttons in a weird state (bug 5549288)
     final static boolean WORKAROUND_INVALID_LAYOUT = true;
@@ -170,6 +184,7 @@ public class NavigationBarView extends LinearLayout {
 
     public NavigationBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
 
         mHidden = false;
 
@@ -197,6 +212,13 @@ public class NavigationBarView extends LinearLayout {
         mBackLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_land);
         mBackAltIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime);
         mBackAltLandIcon = res.getDrawable(R.drawable.ic_sysbar_back_ime_land);
+
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updateColor(false);
+                }});
     }
 
     public class NavBarReceiver extends BroadcastReceiver {
@@ -404,7 +426,7 @@ public class NavigationBarView extends LinearLayout {
         mRotatedViews[Surface.ROTATION_270] = NAVBAR_ALWAYS_AT_RIGHT
                                                 ? findViewById(R.id.rot90)
                                                 : findViewById(R.id.rot270);
-
+        updateColor(true);
         mCurrentView = mRotatedViews[Surface.ROTATION_0];
     }
 
@@ -549,4 +571,30 @@ public class NavigationBarView extends LinearLayout {
         pw.println("    }");
     }
 
+    private void updateColor(boolean defaults) {
+        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        Canvas cnv = new Canvas(bm);
+
+        if (defaults) {
+            cnv.drawColor(0xFF000000);
+            setBackground(new BitmapDrawable(bm));
+            return;
+        }
+
+        String setting = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.NAV_BAR_COLOR);
+        String[] colors = (setting == null || setting.equals("")  ?
+                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
+                ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        String currentColor = colors[Integer.parseInt(colors[2])];
+        
+        cnv.drawColor(new BigInteger(currentColor, 16).intValue());
+
+        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
+                getBackground(), new BitmapDrawable(bm)});
+        transition.setCrossFadeEnabled(true);
+        setBackground(transition);
+        transition.startTransition(1000);
+    }
 }

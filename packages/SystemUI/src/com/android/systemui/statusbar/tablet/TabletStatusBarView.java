@@ -19,14 +19,27 @@ package com.android.systemui.statusbar.tablet;
 import com.android.systemui.R;
 import com.android.systemui.statusbar.BaseStatusBar;
 import com.android.systemui.statusbar.DelegateViewHelper;
-
+import android.content.ContentResolver;
 import android.content.Context;
+import android.database.ContentObserver;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.TransitionDrawable;
+import android.graphics.PorterDuff.Mode;
 import android.os.Handler;
+import android.provider.Settings;
 import android.util.AttributeSet;
+import android.util.ExtendedPropertiesUtils;
 import android.util.Slog;
 import android.view.View;
 import android.view.MotionEvent;
 import android.widget.FrameLayout;
+
+import java.math.BigInteger;
 
 public class TabletStatusBarView extends FrameLayout {
     private Handler mHandler;
@@ -44,6 +57,13 @@ public class TabletStatusBarView extends FrameLayout {
     public TabletStatusBarView(Context context, AttributeSet attrs) {
         super(context, attrs);
         mDelegateHelper = new DelegateViewHelper(this);
+
+        mContext.getContentResolver().registerContentObserver(
+            Settings.System.getUriFor(Settings.System.NAV_BAR_COLOR), false, new ContentObserver(new Handler()) {
+                @Override
+                public void onChange(boolean selfChange) {
+                    updateColor(false);
+                }});
     }
 
     public void setDelegateView(View view) {
@@ -60,6 +80,11 @@ public class TabletStatusBarView extends FrameLayout {
             mDelegateHelper.onInterceptTouchEvent(event);
         }
         return true;
+    }
+
+    @Override
+    public void onFinishInflate() {
+        updateColor(true);
     }
 
     @Override
@@ -142,5 +167,32 @@ public class TabletStatusBarView extends FrameLayout {
     public void setIgnoreChildren(int index, View ignore, View panel) {
         mIgnoreChildren[index] = ignore;
         mPanels[index] = panel;
+    }
+
+    private void updateColor(boolean defaults) {
+        Bitmap bm = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888);
+        Canvas cnv = new Canvas(bm);
+
+        if (defaults) {
+            cnv.drawColor(0xFF000000);
+            setBackground(new BitmapDrawable(bm));
+            return;
+        }
+
+        String setting = Settings.System.getString(mContext.getContentResolver(),
+                Settings.System.NAV_BAR_COLOR);
+        String[] colors = (setting == null || setting.equals("")  ?
+                ExtendedPropertiesUtils.PARANOID_COLORS_DEFAULTS[
+                ExtendedPropertiesUtils.PARANOID_COLORS_NAVBAR] : setting).split(
+                ExtendedPropertiesUtils.PARANOID_STRING_DELIMITER);
+        String currentColor = colors[Integer.parseInt(colors[2])];
+        
+        cnv.drawColor(new BigInteger(currentColor, 16).intValue());
+
+        TransitionDrawable transition = new TransitionDrawable(new Drawable[]{
+                getBackground(), new BitmapDrawable(bm)});
+        transition.setCrossFadeEnabled(true);
+        setBackground(transition);
+        transition.startTransition(1000);
     }
 }

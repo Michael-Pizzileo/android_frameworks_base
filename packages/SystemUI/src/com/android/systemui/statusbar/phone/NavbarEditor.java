@@ -12,6 +12,7 @@ import android.content.res.Configuration;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.provider.Settings;
+import android.util.DisplayMetrics;
 import android.view.HapticFeedbackConstants;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;

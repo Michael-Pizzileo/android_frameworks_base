@@ -17,6 +17,8 @@
 
 package com.android.systemui.statusbar.policy;
 
+import android.app.ActivityManagerNative;
+import android.app.StatusBarManager;
 import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
@@ -29,6 +31,7 @@ import android.graphics.Canvas;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import android.provider.AlarmClock;
 import android.provider.Settings;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -39,7 +42,11 @@ import android.text.style.RelativeSizeSpan;
 import android.text.style.RelativeSizeSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+import android.util.ExtendedPropertiesUtils;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -52,21 +59,42 @@ import com.android.internal.R;
  * This widget display an analogic clock with two hands for hours and
  * minutes.
  */
-public class Clock extends TextView {
+public class Clock extends TextView implements OnClickListener, OnLongClickListener {
     private boolean mAttached;
     private Calendar mCalendar;
     private String mClockFormatString;
     private SimpleDateFormat mClockFormat;
 
-    private static final int AM_PM_STYLE_NORMAL  = 0;
-    private static final int AM_PM_STYLE_SMALL   = 1;
-    private static final int AM_PM_STYLE_GONE    = 2;
+    private static final int AM_PM_SIZE_NORMAL  = 0;
+    private static final int AM_PM_SIZE_SMALL   = 1;
 
-    private int AM_PM_STYLE = AM_PM_STYLE_GONE;
+    private int AM_PM_SIZE = AM_PM_SIZE_SMALL;
 
-    private int mAmPmStyle;
+    private boolean SHOW_AM_PM = false;
+
+    private static final int WEEKDAY_SIZE_NORMAL = 0;
+    private static final int WEEKDAY_SIZE_SMALL  = 1;
+
+    private int WEEKDAY_SIZE = WEEKDAY_SIZE_SMALL;
+
+    private boolean SHOW_WEEKDAY = false;
+
+    private static final int DAYMONTH_SIZE_NORMAL = 0;
+    private static final int DAYMONTH_SIZE_SMALL  = 1;
+
+    private int DAYMONTH_SIZE = DAYMONTH_SIZE_SMALL;
+
+    private boolean SHOW_DAYMONTH = false;
+
+    private int mAmPmSize;
+    private int mWeekdaySize;
+    private int mDaymonthSize;
     private boolean mShowClock;
+    private boolean mShowAmPm;
+    private boolean mShowWeekday;
+    private boolean mShowDaymonth;
     private boolean mShowAlways;
+    private boolean mShowMore;
 
     Handler mHandler;
 
@@ -78,7 +106,17 @@ public class Clock extends TextView {
         void observe() {
             ContentResolver resolver = mContext.getContentResolver();
             resolver.registerContentObserver(Settings.System.getUriFor(
-                    Settings.System.STATUS_BAR_AM_PM), false, this);
+                    Settings.System.STATUS_BAR_AM_PM_SIZE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_SHOW_AM_PM), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_WEEKDAY_SIZE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_SHOW_WEEKDAY), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_DAYMONTH_SIZE), false, this);
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.STATUS_BAR_SHOW_DAYMONTH), false, this);
         }
 
         @Override
@@ -100,10 +138,15 @@ public class Clock extends TextView {
         
         TypedArray a = context.obtainStyledAttributes(attrs, com.android.systemui.R.styleable.Clock, defStyle, 0);
         mShowAlways = a.getBoolean(com.android.systemui.R.styleable.Clock_showAlways, false);
+        mShowMore = a.getBoolean(com.android.systemui.R.styleable.Clock_showMore, true);
 
         mHandler = new Handler();
         SettingsObserver settingsObserver = new SettingsObserver(mHandler);
         settingsObserver.observe();
+        if(isClickable()){
+            setOnClickListener(this);
+            setOnLongClickListener(this);
+        }
         updateSettings();
     }
 
@@ -184,7 +227,7 @@ public class Clock extends TextView {
              * add dummy characters around it to let us find it again after
              * formatting and change its size.
              */
-            if (AM_PM_STYLE != AM_PM_STYLE_NORMAL) {
+            if (AM_PM_SIZE != AM_PM_SIZE_NORMAL || !mShowAmPm) {
                 int a = -1;
                 boolean quoted = false;
                 for (int i = 0; i < format.length(); i++) {
@@ -217,44 +260,227 @@ public class Clock extends TextView {
         }
         String result = sdf.format(mCalendar.getTime());
 
-        if (AM_PM_STYLE != AM_PM_STYLE_NORMAL) {
-            int magic1 = result.indexOf(MAGIC1);
-            int magic2 = result.indexOf(MAGIC2);
-            if (magic1 >= 0 && magic2 > magic1) {
-                SpannableStringBuilder formatted = new SpannableStringBuilder(result);
-                if (AM_PM_STYLE == AM_PM_STYLE_GONE) {
-                    formatted.delete(magic1, magic2+1);
-                } else {
-                    if (AM_PM_STYLE == AM_PM_STYLE_SMALL) {
-                        CharacterStyle style = new RelativeSizeSpan(0.7f);
-                        formatted.setSpan(style, magic1, magic2,
-                                          Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
-                    }
-                    formatted.delete(magic2, magic2 + 1);
-                    formatted.delete(magic1, magic1 + 1);
-                }
-                return formatted;
+        String currentDay = null;
+        String currentMonth = null;
+
+        if(mShowMore) {
+            Calendar calendar = Calendar.getInstance();
+            int day = calendar.get(Calendar.DAY_OF_WEEK);
+            int month = calendar.get(Calendar.MONTH);
+
+            String dayofmonth = String.valueOf(calendar.get(Calendar.DAY_OF_MONTH));
+
+            if (mShowDaymonth) {
+                currentMonth = getMonth(month);
+                result = dayofmonth + " " + currentMonth + result;
+            }
+
+            if (mShowWeekday) {
+                currentDay = getDay(day);
+                result = currentDay + result;
             }
         }
- 
-        return result;
 
+        SpannableStringBuilder formatted = new SpannableStringBuilder(result);
+
+        int magic1 = result.indexOf(MAGIC1);
+        int magic2 = result.indexOf(MAGIC2);
+        if (magic1 >= 0 && magic2 > magic1) {
+            if (!mShowAmPm) {
+                formatted.delete(magic1, magic2+1);
+            } else {
+                if (AM_PM_SIZE == AM_PM_SIZE_SMALL) {
+                    CharacterStyle style = new RelativeSizeSpan(0.7f);
+                    formatted.setSpan(style, magic1, magic2,
+                            Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                }
+                formatted.delete(magic2, magic2 + 1);
+                formatted.delete(magic1, magic1 + 1);
+            }
+        }
+
+        if(mShowMore) {
+            if (WEEKDAY_SIZE != WEEKDAY_SIZE_NORMAL) {
+                if (currentDay != null) {
+                    if (!mShowWeekday) {
+                        formatted.delete(result.indexOf(currentDay), result.lastIndexOf(currentDay)+currentDay.length());
+                    } else if (WEEKDAY_SIZE == WEEKDAY_SIZE_SMALL) {
+                            CharacterStyle style = new RelativeSizeSpan(0.7f);
+                            formatted.setSpan(style, result.indexOf(currentDay), result.lastIndexOf(currentDay)+currentDay.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                    }
+                }
+            }
+
+            if (DAYMONTH_SIZE != DAYMONTH_SIZE_NORMAL) {
+                if (currentMonth != null) {
+                    if (!mShowDaymonth) {
+                        formatted.delete(result.indexOf(currentMonth), result.lastIndexOf(currentMonth)+currentMonth.length());
+                    } else if (DAYMONTH_SIZE == DAYMONTH_SIZE_SMALL) {
+                            CharacterStyle style = new RelativeSizeSpan(0.7f);
+                            formatted.setSpan(style, result.indexOf(currentMonth), result.lastIndexOf(currentMonth)+currentMonth.length(), Spannable.SPAN_EXCLUSIVE_INCLUSIVE);
+                    }
+                }
+            }
+        }
+        return formatted;
+    }
+
+    private String getDay(int today) {
+        String currentDay = null;
+        switch (today) {
+            case 1:
+                currentDay = getResources().getString(R.string.day_of_week_medium_sunday);
+            break;
+            case 2:
+                currentDay = getResources().getString(R.string.day_of_week_medium_monday);
+            break;
+            case 3:
+                currentDay = getResources().getString(R.string.day_of_week_medium_tuesday);
+            break;
+            case 4:
+                currentDay = getResources().getString(R.string.day_of_week_medium_wednesday);
+            break;
+            case 5:
+                currentDay = getResources().getString(R.string.day_of_week_medium_thursday);
+            break;
+            case 6:
+                currentDay = getResources().getString(R.string.day_of_week_medium_friday);
+            break;
+            case 7:
+                currentDay = getResources().getString(R.string.day_of_week_medium_saturday);
+            break;
+        }
+        return currentDay.toUpperCase() + " ";
+    }
+
+    private String getMonth(int month) {
+        String currentMonth = null;
+        switch (month) {
+            case 0:
+                currentMonth = getResources().getString(R.string.month_medium_january);
+            break;
+            case 1:
+                currentMonth = getResources().getString(R.string.month_medium_february);
+            break;
+            case 2:
+                currentMonth = getResources().getString(R.string.month_medium_march);
+            break;
+            case 3:
+                currentMonth = getResources().getString(R.string.month_medium_april);
+            break;
+            case 4:
+                currentMonth = getResources().getString(R.string.month_medium_may);
+            break;
+            case 5:
+                currentMonth = getResources().getString(R.string.month_medium_june);
+            break;
+            case 6:
+                currentMonth = getResources().getString(R.string.month_medium_july);
+            break;
+            case 7:
+                currentMonth = getResources().getString(R.string.month_medium_august);
+            break;
+            case 8:
+                currentMonth = getResources().getString(R.string.month_medium_september);
+            break;
+            case 9:
+                currentMonth = getResources().getString(R.string.month_medium_october);
+            break;
+            case 10:
+                currentMonth = getResources().getString(R.string.month_medium_november);
+            break;
+            case 11:
+                currentMonth = getResources().getString(R.string.month_medium_december);
+            break;
+        }
+        return currentMonth.toUpperCase() + " ";
     }
 
     private void updateSettings(){
         ContentResolver resolver = mContext.getContentResolver();
 
-        mAmPmStyle = (Settings.System.getInt(resolver,
-                Settings.System.STATUS_BAR_AM_PM, 2));
+        mShowAmPm = (Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_SHOW_AM_PM, 0) == 1);
+        mAmPmSize = (Settings.System.getInt(resolver,
+                Settings.System.STATUS_BAR_AM_PM_SIZE, 1));
 
-        if (mAmPmStyle != AM_PM_STYLE) {
-            AM_PM_STYLE = mAmPmStyle;
+        if(mShowMore) {
+            mShowWeekday = (Settings.System.getInt(resolver,
+                    Settings.System.STATUS_BAR_SHOW_WEEKDAY, 0) == 1);
+            mWeekdaySize = (Settings.System.getInt(resolver,
+                    Settings.System.STATUS_BAR_WEEKDAY_SIZE, 1));
+
+            mShowDaymonth = (Settings.System.getInt(resolver,
+                    Settings.System.STATUS_BAR_SHOW_DAYMONTH, 0) == 1);
+            mDaymonthSize = (Settings.System.getInt(resolver,
+                    Settings.System.STATUS_BAR_DAYMONTH_SIZE, 1));
+        }
+
+        if (mAmPmSize != AM_PM_SIZE) {
+            AM_PM_SIZE = mAmPmSize;
             mClockFormatString = "";
+        }
 
-            if (mAttached) {
-                updateClock();
+        if (mShowAmPm != SHOW_AM_PM) {
+            SHOW_AM_PM = mShowAmPm;
+            mClockFormatString = "";
+        }
+
+        if(mShowMore) {
+            if (mWeekdaySize != WEEKDAY_SIZE) {
+                WEEKDAY_SIZE = mWeekdaySize;
+            }
+
+            if (mShowWeekday != SHOW_WEEKDAY) {
+                SHOW_WEEKDAY = mShowWeekday;
+            }
+
+            if (mDaymonthSize != DAYMONTH_SIZE) {
+                DAYMONTH_SIZE = mDaymonthSize;
+            }
+
+            if (mShowDaymonth != SHOW_DAYMONTH) {
+                SHOW_DAYMONTH = mShowDaymonth;
             }
         }
+
+        if (mAttached) {
+            updateClock();
+        }
+    }
+
+    private void collapseStartActivity(Intent what) {
+        // collapse status bar
+        StatusBarManager statusBarManager = (StatusBarManager) getContext().getSystemService(
+                Context.STATUS_BAR_SERVICE);
+        statusBarManager.collapse();
+
+        // dismiss keyguard in case it was active and no passcode set
+        try {
+            ActivityManagerNative.getDefault().dismissKeyguardOnNextActivity();
+        } catch (Exception ex) {
+            // no action needed here
+        }
+
+        // start activity
+        what.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mContext.startActivity(what);
+    }
+
+    @Override
+    public void onClick(View v) {
+        Intent intent = new Intent(AlarmClock.ACTION_SET_ALARM);
+        collapseStartActivity(intent);
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        Intent intent = new Intent("android.settings.DATE_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        collapseStartActivity(intent);
+
+        // consume event
+        return true;
     }
 }
 

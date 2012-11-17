@@ -35,6 +35,8 @@ import android.widget.TextView;
 import com.android.internal.statusbar.IStatusBarService;
 import com.android.systemui.R;
 
+import java.math.BigInteger;
+
 /**
  * TODO: Listen for changes to the setting.
  */
@@ -55,19 +57,20 @@ public abstract class Toggle implements OnCheckedChangeListener {
     protected Vibrator mVibrator;
 
     protected boolean mSystemChange = false;
-    final boolean useAltButtonLayout;
+    final int mLayout;
     final int defaultColor;
     final int defaultOffColor;
 
     public Toggle(Context context) {
         mContext = context;
 
-        useAltButtonLayout = Settings.System.getInt(
-                context.getContentResolver(),
-                Settings.System.STATUSBAR_TOGGLES_USE_BUTTONS, 1) == 1;
+        mLayout = Settings.System.getInt(context.getContentResolver(),
+                Settings.System.STATUS_BAR_TOGGLES_LAYOUT, TogglesView.LAYOUT_TOGGLE);
 
-        defaultColor = context.getResources().getColor(
-            com.android.internal.R.color.holo_blue_light);
+        String color = Settings.System.getString(context.getContentResolver(),
+                Settings.System.STATUS_BAR_TOGGLES_COLOR);
+        // Default to holo blue light
+        defaultColor = new BigInteger(color != null ? color : "FF33B5E5", 16).intValue();
 
         float[] hsv = new float[3];
         Color.colorToHSV(defaultColor, hsv);
@@ -76,9 +79,18 @@ public abstract class Toggle implements OnCheckedChangeListener {
 
         mVibrator = (Vibrator) mContext.getSystemService(Context.VIBRATOR_SERVICE);
 
-        mView = View.inflate(mContext,
-                useAltButtonLayout ? R.layout.toggle_button : R.layout.toggle,
-                null);
+        switch (mLayout) {
+            case TogglesView.LAYOUT_SWITCH:
+                mView = View.inflate(mContext, R.layout.toggle_switch, null);
+                break;
+            case TogglesView.LAYOUT_TOGGLE:
+            case TogglesView.LAYOUT_BUTTON:
+                mView = View.inflate(mContext, R.layout.toggle_toggle, null);
+                break;
+            case TogglesView.LAYOUT_MULTIROW:
+                mView = View.inflate(mContext, R.layout.toggle_multirow, null);
+                break;
+        }
 
         mIcon = (ImageView) mView.findViewById(R.id.icon);
         mToggle = (CompoundButton) mView.findViewById(R.id.toggle);
@@ -99,12 +111,20 @@ public abstract class Toggle implements OnCheckedChangeListener {
     }
 
     public void updateDrawable(boolean toggle) {
-        if (!useAltButtonLayout){
-            return;
+        Drawable bg = null;
+        switch(mLayout){
+            case TogglesView.LAYOUT_TOGGLE:
+                bg = mContext.getResources().getDrawable(
+                        R.drawable.btn_toggle_small);
+                break;
+            case TogglesView.LAYOUT_BUTTON:
+                bg = mContext.getResources().getDrawable(
+                        R.drawable.btn_toggle_fit);
+                break;
+            default:
+                return;
         }
 
-        Drawable bg = mContext.getResources().getDrawable(
-                toggle ? R.drawable.btn_on : R.drawable.btn_off);
         if (toggle) {
             bg.setColorFilter(defaultColor, PorterDuff.Mode.SRC_ATOP);
         } else {

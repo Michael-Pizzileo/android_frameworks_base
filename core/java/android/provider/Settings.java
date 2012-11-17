@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2006 The Android Open Source Project
+ * This code has been modified.  Portions copyright (C) 2012, ParanoidAndroid Project.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1323,6 +1324,23 @@ public final class Settings {
          */
         public static final String WIFI_STATIC_DNS2 = "wifi_static_dns2";
 
+        /**
+         * Allows automatic retrieval of mms contents
+         * <p>Type: INT</p>
+         * 0 -- false
+         * 1 -- true
+         * @hide
+         */
+        public static final String MMS_AUTO_RETRIEVAL = "mms_auto_retrieval";
+
+        /**
+         * Allows automatic retrieval of mms contents during roaming
+         * <p>Type: INT</p>
+         * 0 -- false
+         * 1 -- true
+         * @hide
+         */
+        public static final String MMS_AUTO_RETRIEVAL_ON_ROAMING = "mms_auto_on_roaming";
 
         /**
          * Determines whether remote devices may discover and/or connect to
@@ -2244,6 +2262,12 @@ public final class Settings {
         public static final String LOCKSCREEN_VIBRATE_ENABLED = "lockscreen.vibrate_enabled";
 
         /**
+         * Whether the screen will be locked if a call ends and the screen is off.
+         * @hide
+         */
+        public static final String LOCKSCREEN_IF_CALL_ENDS_WITH_SCREENOFF = "lockscreen_if_call_ends_with_screenoff";
+
+        /**
          * Stores values for custom lockscreen targets
          * @hide
          */
@@ -2342,42 +2366,6 @@ public final class Settings {
         public static final String POINTER_SPEED = "pointer_speed";
 
         /**
-         * Enable toggles on statusbar
-         * @hide
-         */
-        public static final String STATUSBAR_TOGGLES_ENABLE = "statusbar_toggles_enable";
-
-        /**
-         * Button-like toggles style (instead of switches)
-         * @hide
-         */
-        public static final String STATUSBAR_TOGGLES_USE_BUTTONS = "statusbar_toggles_use_buttons";
-
-        /**
-         * Toggles to use on statusbar
-         * @hide
-         */
-        public static final String STATUSBAR_TOGGLES = "statusbar_toggles";
-
-        /**
-         * Style of the toggles
-         * @hide
-         */
-        public static final String STATUSBAR_TOGGLES_STYLE = "statusbar_toggles_style";
-
-        /**
-         * Whether to show brightness on toggles view
-         * @hide
-         */
-        public static final String STATUSBAR_TOGGLES_SHOW_BRIGHTNESS = "statusbar_toggles_show_brightness";
-
-        /**
-         * Statusbar layout
-         * @hide
-         */
-        public static final String STATUS_BAR_LAYOUT = "statusbar_layout";
-
-        /**
          * Navigation bar, whether to show or hide
          * @hide
          */
@@ -2388,6 +2376,36 @@ public final class Settings {
          * @hide
          */
         public static final String NAV_BAR_TABUI_MENU = "nav_bar_tabui_menu";
+
+        /**
+         * Ability to change navigation bar color
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String NAV_BAR_COLOR = "nav_bar_color";
+
+        /**
+         * Ability to change navigation button color
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String NAV_BUTTON_COLOR = "nav_button_color";
+
+        /**
+         * Ability to change navigation glow color
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String NAV_GLOW_COLOR = "nav_glow_color";
 
         /**
          * Navigation controls to Use
@@ -2467,20 +2485,77 @@ public final class Settings {
         public static final String MAX_NOTIFICATION_ICONS = "max_notification_icons";
 
         /**
-         * Display style of AM/PM next to clock in status bar
-         * 0: Normal display (Eclair stock)
-         * 1: Small display (Froyo stock)
-         * 2: No display (Gingerbread/ICS stock)
-         * default: 2
+         * Whether to show AM/PM next to clock in status bar
+         * 0: don't show AM/PM
+         * 1: show AM/PM
+         * default: 0
          * @hide
          */
-        public static final String STATUS_BAR_AM_PM = "status_bar_am_pm";
+        public static final String STATUS_BAR_SHOW_AM_PM = "status_bar_show_am_pm";
+
+        /**
+         * Size of AM/PM next to clock in status bar
+         * 0: Normal display (Eclair stock)
+         * 1: Small display (Froyo stock)
+         * default: 1
+         * @hide
+         */
+        public static final String STATUS_BAR_AM_PM_SIZE = "status_bar_am_pm_size";
+
+        /**
+         * Whether to show day of the week before to clock in status bar
+         * 0: don't show day of the week
+         * 1: show day of the week
+         * default: 0
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_WEEKDAY = "status_bar_show_weekday";
+
+        /**
+         * Size of the day of the week before clock in status bar
+         * 0: Normal display
+         * 1: Small display
+         * default: 1
+         * @hide
+         */
+        public static final String STATUS_BAR_WEEKDAY_SIZE = "status_bar_weekday_size";
+
+        /**
+         * Whether to show day and month before clock in status bar
+         * 0: don't show day and month
+         * 1: show day and month
+         * default: 0
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_DAYMONTH = "status_bar_show_daymonth";
+
+        /**
+         * Size of day and month before clock in status bar
+         * 0: Normal display
+         * 1: Small display
+         * default: 1
+         * @hide
+         */
+        public static final String STATUS_BAR_DAYMONTH_SIZE = "status_bar_daymonth_size";
+
+        /**
+         * Statusbar color. May include alpha
+         * Format: AARRGGBB|AARRGGBB|index
+         * First color is the primary, systemwide color
+         * Second is the color of the current foreground-app
+         * Last (third) entry determines which has changed last, 0 or 1
+         * @hide
+         */
+        public static final String STATUS_BAR_COLOR = "status_bar_color";
 
         /**
          * Display style of the status bar battery information
          * 0: Display the stock battery information
-         * 1: Display cm battery percentage implementation / dont show stock icon
-         * 2: Hide the battery information
+         * 1: Display battery percentage without icon
+         * 2: Display cm battery percentage implementation / dont show stock icon
+         * 3: Display cm circle battery implementation without percentage
+         * 4: Display cm circle battery implementation with percentage
+         * 5: Hide the battery information
          * default: 0
          * @hide
          */
@@ -2528,16 +2603,83 @@ public final class Settings {
         public static final String STATUS_BAR_IME_SWITCHER = "status_bar_ime_switcher";
 
         /**
-         * Statusbar State
+         * Enable toggles on statusbar
+         * 0 = Disable toggle
+         * 1 = Enable toggles
          * @hide
          */
-        public static final String STATUSBAR_STATE = "statusbar_state";
+        public static final String STATUS_BAR_TOGGLES_ENABLE = "statusbar_toggles_enable";
+
+        /**
+         * Toggles to use on statusbar
+         * Any combination, use "|" as divider:
+         * ROTATE, BLUETOOTH, GPS, LTE, DATA, WIFI, 2G, AP, AIRPLANE_MODE, VIBRATE,
+         * SILENT, TORCH, SYNC, TETHER, NFC, DONOTDISTURB
+         * @hide
+         */
+        public static final String STATUS_BAR_TOGGLES = "statusbar_toggles";
+
+        /**
+         * Allows to switch between the different toggle layouts
+         * 0 = Switch
+         * 1 = Toggle
+         * 2 = Holo
+         * 3 = Multirow
+         * @hide
+         */
+        public static final String STATUS_BAR_TOGGLES_LAYOUT = "statusbar_toggles_layout";
+
+        /**
+         * Style of the toggles
+         * 1 = None
+         * 2 = Icon
+         * 3 = Text
+         * 4 = Icon-Text
+         * @hide
+         */
+        public static final String STATUS_BAR_TOGGLES_STYLE = "statusbar_toggles_style";
+
+        /**
+         * Color scheme of the toggles layout (if applicable)
+         * @hide
+         */
+        public static final String STATUS_BAR_TOGGLES_COLOR = "statusbar_toggles_color";
+
+        /**
+         * Whether to show brightness on toggles view
+         * 0 = Show brightness slider
+         * 1 = Hide brightness slider
+         * @hide
+         */
+        public static final String STATUS_BAR_TOGGLES_SHOW_BRIGHTNESS = "statusbar_toggles_show_brightness";
+
+        /**
+         * Disable scrolling on non-switched toggle layouts
+         * 0 = Enable scroll
+         * 1 = Disable scroll
+         * @hide
+         */
+        public static final String STATUS_BAR_TOGGLES_DISABLE_SCROLL = "statusbar_toggles_disable_scroll";
 
         /**
          * Statusbar do not disturb
          * @hide
          */
         public static final String STATUS_BAR_DONOTDISTURB = "statusbar_donotdisturb";
+
+        /**
+         * Whether to show settings on notification layouts
+         * 0 = Show settings
+         * 1 = Hide settings
+         * @hide
+         */
+        public static final String STATUS_BAR_SHOW_SETTINGS = "statusbar_show_settings";
+
+        /**
+         * Statusbar State
+         * @hide
+         */
+        public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
 
         /**
          * Whether to use a separate delay for "slide to unlock" and security
@@ -2568,7 +2710,7 @@ public final class Settings {
 
         /**
          * Boolean value whether to link ringtone and notification volumes
-         * 
+         *
          * @hide
          */
         public static final String VOLUME_LINK_NOTIFICATION = "volume_link_notification";
@@ -2578,6 +2720,12 @@ public final class Settings {
          * @hide
          */
         public static final String MENU_UNLOCK_SCREEN = "menu_unlock_screen";
+
+        /**
+         * Whether to unlock the screen with the home key.  The value is boolean (1 or 0).
+         * @hide
+         */
+        public static final String HOME_UNLOCK_SCREEN = "home_unlock_screen";
 
         /**
          * Whether to wake the screen with the volume keys, the value is boolean.
@@ -2734,6 +2882,54 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_CALENDAR_REMINDERS_ONLY = "lockscreen_calendar_reminders_only";
+        /**
+         * Enable Stylus Gestures
+         *
+         * @hide
+         */
+        public static final String ENABLE_STYLUS_GESTURES = "enable_stylus_gestures";
+
+        /**
+         * Left Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_LEFT_SWIPE = "gestures_left_swipe";
+
+        /**
+         * Right Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_RIGHT_SWIPE = "gestures_right_swipe";
+
+        /**
+         * Up Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_UP_SWIPE = "gestures_up_swipe";
+
+        /**
+         * down Swipe Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_DOWN_SWIPE = "gestures_down_swipe";
+
+        /**
+         * Long press Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_LONG_PRESS = "gestures_long_press";
+
+        /**
+         * double tap Action
+         *
+         * @hide
+         */
+        public static final String GESTURES_DOUBLE_TAP = "gestures_double_tap";
 
         /**
          * Always show the battery status on the lockscreen
@@ -2746,6 +2942,24 @@ public final class Settings {
          * @hide
          */
         public static final String LOCKSCREEN_CLOCK_ALIGN = "lockscreen_clock_align";
+
+        /**
+         * Action for long-pressing back button on lock screen
+         * @hide
+         */
+        public static final String LOCKSCREEN_LONG_BACK_ACTION = "lockscreen_long_back_action";
+
+        /**
+         * Action for long-pressing home button on lock screen
+         * @hide
+         */
+        public static final String LOCKSCREEN_LONG_HOME_ACTION = "lockscreen_long_home_action";
+
+        /**
+         * Action for long-pressing menu button on lock screen
+         * @hide
+         */
+        public static final String LOCKSCREEN_LONG_MENU_ACTION = "lockscreen_long_menu_action";
 
         /**
          * Show the pending notification counts as overlays on the status bar
@@ -2764,12 +2978,6 @@ public final class Settings {
          * @hide
          */
         public static final String POWER_MENU_REBOOT_ENABLED = "power_menu_reboot_enabled";
-        
-        /**
-         * Whether power menu expanded desktop is enabled
-         * @hide
-         */
-        public static final String POWER_MENU_EXPANDED_DESKTOP_ENABLED = "power_menu_expanded_desktop_enabled";
 
         /**
          * Whether power menu screenshot is enabled
@@ -2778,10 +2986,28 @@ public final class Settings {
         public static final String POWER_MENU_SCREENSHOT_ENABLED = "power_menu_screenshot_enabled";
 
         /**
+         * Whether power menu expanded desktop is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_EXPANDED_DESKTOP_ENABLED = "power_menu_expanded_desktop_enabled";
+
+        /**
          * Whether power menu profiles switcher is enabled
          * @hide
          */
         public static final String POWER_MENU_PROFILES_ENABLED = "power_menu_profiles_enabled";
+
+        /**
+         * Whether power menu airplane toggle is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_AIRPLANE_ENABLED = "power_menu_airplane_enabled";
+
+        /**
+         * Whether power menu silent mode is enabled
+         * @hide
+         */
+        public static final String POWER_MENU_SILENT_ENABLED = "power_menu_silent_enabled";
 
         /**
          * Whether to enable custom rebindings of the actions performed on
@@ -2798,6 +3024,7 @@ public final class Settings {
           * 3 - Search
           * 4 - Voice search
           * 5 - In-app search
+          * 6 - Torch
           * @hide
           */
          public static final String KEY_HOME_LONG_PRESS_ACTION = "key_home_long_press_action";
@@ -2883,6 +3110,8 @@ public final class Settings {
             WIFI_STATIC_NETMASK,
             WIFI_STATIC_DNS1,
             WIFI_STATIC_DNS2,
+            MMS_AUTO_RETRIEVAL,
+            MMS_AUTO_RETRIEVAL_ON_ROAMING,
             BLUETOOTH_DISCOVERABILITY,
             BLUETOOTH_DISCOVERABILITY_TIMEOUT,
             DIM_SCREEN,
@@ -2950,7 +3179,22 @@ public final class Settings {
             POWER_MENU_SCREENSHOT_ENABLED,
             POWER_MENU_REBOOT_ENABLED,
             POWER_MENU_PROFILES_ENABLED,
+            POWER_MENU_AIRPLANE_ENABLED,
+            POWER_MENU_SILENT_ENABLED,
             LOCKSCREEN_VIBRATE_ENABLED,
+        };
+
+        /**
+         * Insecure settings can be set on any context, without any
+         * importance of permission level
+         *
+         * @hide
+         */
+        public static final String[] INSECURE_SETTINGS = {
+            NAV_BAR_COLOR,
+            NAV_BUTTON_COLOR,
+            NAV_GLOW_COLOR,
+            STATUS_BAR_COLOR
         };
 
         // Settings moved to Settings.Secure
@@ -3182,6 +3426,7 @@ public final class Settings {
         @Deprecated
         public static final String WIFI_WATCHDOG_PING_TIMEOUT_MS =
             Secure.WIFI_WATCHDOG_PING_TIMEOUT_MS;
+
     }
 
     /**
