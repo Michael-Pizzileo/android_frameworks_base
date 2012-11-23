@@ -466,7 +466,6 @@ static void android_hardware_Camera_getCameraInfo(JNIEnv *env, jobject thiz,
        env->SetIntField(info_obj, fields.orientation, cameraInfo.orientation);
     }
 
-    char value[PROPERTY_VALUE_MAX];
     property_get("ro.camera.sound.forced", value, "0");
     jboolean canDisableShutterSound = (strncmp(value, "0", 2) == 0);
     env->SetBooleanField(info_obj, fields.canDisableShutterSound,
