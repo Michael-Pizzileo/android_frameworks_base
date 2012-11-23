@@ -76,6 +76,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
 
     private final Object mLock = new Object();
 
+    private final Context mContext;
     private final WakeLock mWakeLock;  // held while there is a pending route change
     private final AudioManager mAudioManager;
 
@@ -89,6 +90,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
     private final boolean mUseDevInputEventForAudioJack;
 
     public WiredAccessoryManager(Context context, InputManagerService inputManager) {
+	mContext = context;
         PowerManager pm = (PowerManager)context.getSystemService(Context.POWER_SERVICE);
         mWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "WiredAccessoryManager");
         mWakeLock.setReferenceCounted(false);
