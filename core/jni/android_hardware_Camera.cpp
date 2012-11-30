@@ -460,7 +460,7 @@ static void android_hardware_Camera_getCameraInfo(JNIEnv *env, jobject thiz,
     property_get("hw.cameras", value, "2");
     if (strcmp(value, "1") == 0) {
        env->SetIntField(info_obj, fields.facing, 1);
-       env->SetIntField(info_obj, fields.orientation, 270);
+       env->SetIntField(info_obj, fields.orientation, 0);
     } else {
        env->SetIntField(info_obj, fields.facing, cameraInfo.facing);
        env->SetIntField(info_obj, fields.orientation, cameraInfo.orientation);
