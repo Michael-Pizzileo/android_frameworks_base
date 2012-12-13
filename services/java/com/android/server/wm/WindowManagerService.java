@@ -311,6 +311,10 @@ public class WindowManagerService extends IWindowManager.Stub
             if (DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED.equals(action)) {
                 mKeyguardDisableHandler.sendEmptyMessage(
                     KeyguardDisableHandler.KEYGUARD_POLICY_CHANGED);
+            } else if (WindowManagerPolicy.ACTION_HDMI_PLUGGED.equals(action)) {
+                 mTVOutOn 
+                 	= intent.getBooleanExtra(WindowManagerPolicy.EXTRA_HDMI_PLUGGED_STATE, false);
+                 Slog.i("WindowManagerService ", "TvOut Intent receiver, tvout status="+ mTVOutOn);
             }
         }
     };
@@ -578,6 +582,8 @@ public class WindowManagerService extends IWindowManager.Stub
 
     PowerManagerService mPowerManager;
 
+    private boolean mTVOutOn = false;
+
     float mWindowAnimationScale = 1.0f;
     float mTransitionAnimationScale = 1.0f;
     float mAnimatorDurationScale = 1.0f;
@@ -838,7 +844,13 @@ public class WindowManagerService extends IWindowManager.Stub
         // Track changes to DevicePolicyManager state so we can enable/disable keyguard.
         IntentFilter filter = new IntentFilter();
         filter.addAction(DevicePolicyManager.ACTION_DEVICE_POLICY_MANAGER_STATE_CHANGED);
-        mContext.registerReceiver(mBroadcastReceiver, filter);
+        filter.addAction(WindowManagerPolicy.ACTION_HDMI_PLUGGED);
+        Intent intent = mContext.registerReceiver(mBroadcastReceiver, filter);    
+        if (intent != null) {
+            // Retrieve current sticky tvout event broadcast.
+            mTVOutOn 
+            	= intent.getBooleanExtra(WindowManagerPolicy.EXTRA_HDMI_PLUGGED_STATE, false);
+        }	
 
         mHoldingScreenWakeLock = pmc.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK
                 | PowerManager.ON_AFTER_RELEASE, TAG);

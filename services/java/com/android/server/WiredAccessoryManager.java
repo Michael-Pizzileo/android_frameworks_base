@@ -44,6 +44,7 @@ import java.io.FileReader;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import android.view.WindowManagerPolicy;
 
 /**
  * <p>WiredAccessoryManager monitors for a wired headset on the main board or dock using
@@ -53,6 +54,9 @@ import java.util.List;
 final class WiredAccessoryManager implements WiredAccessoryCallbacks {
     private static final String TAG = WiredAccessoryManager.class.getSimpleName();
     private static final boolean LOG = true;
+
+    private boolean mHdmiPlugged;
+    private int switchState;
 
     private static final int BIT_HEADSET = (1 << 0);
     private static final int BIT_HEADSET_NO_MIC = (1 << 1);
@@ -254,8 +258,8 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                 device = AudioManager.DEVICE_OUT_ANLG_DOCK_HEADSET;
             } else if (headset == BIT_USB_HEADSET_DGTL) {
                 device = AudioManager.DEVICE_OUT_DGTL_DOCK_HEADSET;
-            } else if (headset == BIT_HDMI_AUDIO) {
-                device = AudioManager.DEVICE_OUT_AUX_DIGITAL;
+            /*} else if (headset == BIT_HDMI_AUDIO) {
+                device = AudioManager.DEVICE_OUT_AUX_DIGITAL;*/
             } else {
                 Slog.e(TAG, "setDeviceState() invalid headset type: "+headset);
                 return;
@@ -279,6 +283,26 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             sb.append("SW_MICROPHONE_INSERT");
         }
         return sb.toString();
+    }
+
+    private BroadcastReceiver mHdmiPluggedReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {        	
+            mHdmiPlugged
+                = intent.getBooleanExtra(WindowManagerPolicy.EXTRA_HDMI_PLUGGED_STATE, false); 
+            
+            //if (LOG) Slog.v(TAG, "HdmiPluggedReceiver, HdmiPlugged = " + mHdmiPlugged);    
+            updateHdmiState(mHdmiPlugged? 1 : 0);                
+        }
+    };
+
+    private synchronized final void updateHdmiState(int state)
+    {
+    	//if (LOG) Slog.v(TAG, "updateHdmiState, state = " + state);  
+        switchState = ((mHeadsetState & (BIT_HEADSET|BIT_HEADSET_NO_MIC|
+                                         BIT_USB_HEADSET_DGTL|BIT_USB_HEADSET_ANLG)) |
+                       ((state == 1) ? BIT_HDMI_AUDIO : 0));
+       
+        updateLocked("hdmi", switchState);
     }
 
     class WiredAccessoryObserver extends UEventObserver {
@@ -312,6 +336,14 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                         Slog.e(TAG, "" , e);
                     }
                 }
+		IntentFilter filter = new IntentFilter();
+		filter.addAction(WindowManagerPolicy.ACTION_HDMI_PLUGGED);
+		Intent intent = mContext.registerReceiver(mHdmiPluggedReceiver, filter);
+		if (intent != null) {
+		    // Retrieve current sticky dock event broadcast.
+		    mHdmiPlugged = intent.getBooleanExtra(WindowManagerPolicy.EXTRA_HDMI_PLUGGED_STATE, false);
+		    updateHdmiState(mHdmiPlugged? 1 : 0);
+		} 
             }
 
             // At any given time accessories could be inserted
@@ -353,7 +385,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
             //
             // If the kernel does not have an "hdmi_audio" switch, just fall back on the older
             // "hdmi" switch instead.
-            uei = new UEventInfo(NAME_HDMI_AUDIO, BIT_HDMI_AUDIO, 0);
+            /*uei = new UEventInfo(NAME_HDMI_AUDIO, BIT_HDMI_AUDIO, 0);
             if (uei.checkSwitchExists()) {
                 retVal.add(uei);
             } else {
@@ -363,7 +395,7 @@ final class WiredAccessoryManager implements WiredAccessoryCallbacks {
                 } else {
                     Slog.w(TAG, "This kernel does not have HDMI audio support");
                 }
-            }
+            }*/
 
             return retVal;
         }
