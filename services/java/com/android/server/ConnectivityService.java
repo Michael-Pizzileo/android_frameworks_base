@@ -67,6 +67,7 @@ import android.net.Proxy;
 import android.net.ProxyProperties;
 import android.net.RouteInfo;
 import android.net.wifi.WifiStateTracker;
+import android.net.wimax.WimaxHelper;
 import android.net.wimax.WimaxManagerConstants;
 import android.os.Binder;
 import android.os.FileUtils;
@@ -609,8 +610,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
         Class wimaxStateTrackerClass = null;
         Class wimaxServiceClass = null;
         Class wimaxManagerClass;
-        String wimaxJarLocation;
-        String wimaxLibLocation;
         String wimaxManagerClassName;
         String wimaxServiceClassName;
         String wimaxStateTrackerClassName;
@@ -622,10 +621,6 @@ public class ConnectivityService extends IConnectivityManager.Stub {
 
         if (isWimaxEnabled) {
             try {
-                wimaxJarLocation = context.getResources().getString(
-                        com.android.internal.R.string.config_wimaxServiceJarLocation);
-                wimaxLibLocation = context.getResources().getString(
-                        com.android.internal.R.string.config_wimaxNativeLibLocation);
                 wimaxManagerClassName = context.getResources().getString(
                         com.android.internal.R.string.config_wimaxManagerClassname);
                 wimaxServiceClassName = context.getResources().getString(
@@ -633,10 +628,7 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                 wimaxStateTrackerClassName = context.getResources().getString(
                         com.android.internal.R.string.config_wimaxStateTrackerClassname);
 
-                if (DBG) log("wimaxJarLocation: " + wimaxJarLocation);
-                wimaxClassLoader =  new DexClassLoader(wimaxJarLocation,
-                        new ContextWrapper(context).getCacheDir().getAbsolutePath(),
-                        wimaxLibLocation, ClassLoader.getSystemClassLoader());
+                wimaxClassLoader = WimaxHelper.getWimaxClassLoader(context);
 
                 try {
                     wimaxManagerClass = wimaxClassLoader.loadClass(wimaxManagerClassName);
@@ -2690,18 +2682,8 @@ public class ConnectivityService extends IConnectivityManager.Stub {
                             state + "/" + info.getDetailedState());
                     }
 
-                    // Connectivity state changed:
-                    // [31-14] Reserved for future use
-                    // [13-10] Network subtype (for mobile network, as defined
-                    //         by TelephonyManager)
-                    // [9-4] Detailed state ordinal (as defined by
-                    //         NetworkInfo.DetailedState)
-                    // [3-0] Network type (as defined by ConnectivityManager)
-                    int eventLogParam = (info.getType() & 0xf) |
-                            ((info.getDetailedState().ordinal() & 0x3f) << 4) |
-                            (info.getSubtype() << 10);
-                    EventLog.writeEvent(EventLogTags.CONNECTIVITY_STATE_CHANGED,
-                            eventLogParam);
+                    EventLogTags.writeConnectivityStateChanged(
+                            info.getType(), info.getSubtype(), info.getDetailedState().ordinal());
 
                     if (info.getDetailedState() ==
                             NetworkInfo.DetailedState.FAILED) {

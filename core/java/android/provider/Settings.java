@@ -626,6 +626,21 @@ public final class Settings {
     public static final String ACTION_NFCSHARING_SETTINGS =
         "android.settings.NFCSHARING_SETTINGS";
 
+    /**
+     * Activity Action: Show Daydream settings.
+     * <p>
+     * In some cases, a matching Activity may not exist, so ensure you
+     * safeguard against this.
+     * <p>
+     * Input: Nothing.
+     * <p>
+     * Output: Nothing.
+     * @see android.service.dreams.DreamService
+     * @hide
+     */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
+    public static final String ACTION_DREAM_SETTINGS = "android.settings.DREAM_SETTINGS";
+
     // End of Intent actions for Settings
 
     /**
@@ -1582,6 +1597,23 @@ public final class Settings {
         @Deprecated
         public static final String WIFI_STATIC_DNS2 = "wifi_static_dns2";
 
+        /**
+         * Allows automatic retrieval of mms contents
+         * <p>Type: INT</p>
+         * 0 -- false
+         * 1 -- true
+         * @hide
+         */
+        public static final String MMS_AUTO_RETRIEVAL = "mms_auto_retrieval";
+
+        /**
+         * Allows automatic retrieval of mms contents during roaming
+         * <p>Type: INT</p>
+         * 0 -- false
+         * 1 -- true
+         * @hide
+         */
+        public static final String MMS_AUTO_RETRIEVAL_ON_ROAMING = "mms_auto_on_roaming";
 
         /**
          * Determines whether remote devices may discover and/or connect to
@@ -1694,134 +1726,22 @@ public final class Settings {
         public static final int SCREEN_BRIGHTNESS_MODE_AUTOMATIC = 1;
 
         /**
-         * Indicates that custom light sensor settings has changed.
-         * The value is random and changes reloads light settings.
-         *
-         * @hide
-         */
-        public static final String LIGHTS_CHANGED = "lights_changed";
-
-        /**
-         * Whether custom light sensor levels & values are enabled. The value is
-         * boolean (1 or 0).
-         *
-         * @hide
-         */
-        public static final String LIGHT_SENSOR_CUSTOM = "light_sensor_custom";
-
-        /**
-         * Screen dim value to use if LIGHT_SENSOR_CUSTOM is set. The value is int.
-         * Default is android.os.BRIGHTNESS_DIM.
-         *
-         * @hide
-         */
-        public static final String LIGHT_SCREEN_DIM = "light_screen_dim";
-
-        /**
-         * Custom light sensor levels. The value is a comma separated int array
-         * with length N.
+         * Custom automatic brightness light sensor levels.
+         * The value is a comma separated int array with length N.
          * Example: "100,300,3000".
          *
          * @hide
          */
-        public static final String LIGHT_SENSOR_LEVELS = "light_sensor_levels";
+        public static final String AUTO_BRIGHTNESS_LUX = "auto_brightness_lux";
 
         /**
-         * Custom light sensor lcd values. The value is a comma separated int array
-         * with length N+1.
+         * Custom automatic brightness display backlight brightness values.
+         * The value is a comma separated int array with length N+1.
          * Example: "10,50,100,255".
          *
          * @hide
          */
-        public static final String LIGHT_SENSOR_LCD_VALUES = "light_sensor_lcd_values";
-
-        /**
-         * Custom light sensor lcd values. The value is a comma separated int array
-         * with length N+1.
-         * Example: "10,50,100,255".
-         *
-         * @hide
-         */
-        public static final String LIGHT_SENSOR_BUTTON_VALUES = "light_sensor_button_values";
-
-        /**
-         * Custom light sensor lcd values. The value is a comma separated int array
-         * with length N+1.
-         * Example: "10,50,100,255".
-         *
-         * @hide
-         */
-        public static final String LIGHT_SENSOR_KEYBOARD_VALUES = "light_sensor_keyboard_values";
-
-        /**
-         * Whether light sensor is allowed to decrease when calculating automatic
-         * backlight. The value is boolean (1 or 0).
-         *
-         * @hide
-         */
-        public static final String LIGHT_DECREASE = "light_decrease";
-
-        /**
-         * Light sensor hysteresis for decreasing backlight. The value is
-         * int (0-99) representing % (0-0.99 as float). Example:
-         *
-         * Levels     Output
-         * 0 - 100    50
-         * 100 - 200  100
-         * 200 - Inf  255
-         *
-         * Current sensor value is 150 which gives light value 100. Hysteresis is 50.
-         * Current level lower bound is 100 and previous lower bound is 0.
-         * Sensor value must drop below 100-(100-0)*(50/100)=50 for output to become 50
-         * (corresponding to the 0 - 100 level).
-         * @hide
-         */
-        public static final String LIGHT_HYSTERESIS = "light_hysteresis";
-
-        /**
-         * Whether light sensor used when calculating automatic backlight should
-         * be filtered through an moving average filter.
-         * The value is boolean (1 or 0).
-         *
-         * @hide
-         */
-        public static final String LIGHT_FILTER = "light_filter";
-
-        /**
-         * Window length of filter used when calculating automatic backlight.
-         * One minute means that the average sensor value last minute is used.
-         * The value is integer (milliseconds)
-         *
-         * @hide
-         */
-        public static final String LIGHT_FILTER_WINDOW = "light_filter_window";
-
-        /**
-         * Reset threshold of filter used when calculating automatic backlight.
-         * Sudden large jumps in sensor value resets the filter. This is used
-         * to make the filter respond quickly to large enough changes in input
-         * while still filtering small changes. Example:
-         *
-         * Current filter value (average) is 100 and sensor value is changing to
-         * 10, 150, 100, 30, 50. The filter is continously taking the average of
-         * the samples. Now the user goes outside and the value jumps over 1000.
-         * The difference between current average and new sample is larger than
-         * the reset threshold and filter is reset. It begins calculating a new
-         * average on samples around 1000 (say, 800, 1200, 1000, 1100 etc.)
-         *
-         * The value is integer (lux)
-         *
-         * @hide
-         */
-        public static final String LIGHT_FILTER_RESET = "light_filter_reset";
-
-        /**
-         * Sample interval of filter used when calculating automatic backlight.
-         * The value is integer (milliseconds)
-         *
-         * @hide
-         */
-        public static final String LIGHT_FILTER_INTERVAL = "light_filter_interval";
+        public static final String AUTO_BRIGHTNESS_BACKLIGHT = "auto_brightness_backlight";
 
         /**
          * Whether to enable the electron beam animation when turning screen on
@@ -1949,7 +1869,7 @@ public final class Settings {
          * Whether to prevent loud volume levels when headset is first plugged in.
          * @hide
          */
-        public static final String SAFE_HEADSET_VOLUME_RESTORE = "safe_headset_volume_restore";
+        public static final String SAFE_HEADSET_VOLUME = "safe_headset_volume";
 
         /**
          * Master volume (float in the range 0.0f to 1.0f).
@@ -2424,6 +2344,14 @@ public final class Settings {
         public static final String POINTER_LOCATION = "pointer_location";
 
         /**
+         * Show icon when stylus is used?
+         * 0 = no
+         * 1 = yes
+         * @hide
+         */
+        public static final String STYLUS_ICON_ENABLED = "stylus_icon_enabled";
+
+        /**
          * Show touch positions on screen?
          * 0 = no
          * 1 = yes
@@ -2582,6 +2510,62 @@ public final class Settings {
         public static final String POINTER_SPEED = "pointer_speed";
 
         /**
+         * Quick Settings Panel Tiles to Use
+         *
+         * @hide
+         */
+        public static final String QUICK_SETTINGS_TILES = "quick_settings_tiles";
+
+        /**
+         * Quick Settings Panel Dynamic Tiles
+         *
+         * @hide
+         */
+        public static final String QS_DYNAMIC_ALARM = "qs_dyanmic_alarm";
+
+        /**
+         * Quick Settings Panel Dynamic Tiles
+         *
+         * @hide
+         */
+        public static final String QS_DYNAMIC_BUGREPORT = "qs_dyanmic_bugreport";
+
+        /**
+         * Quick Settings Panel Dynamic Tiles
+         *
+         * @hide
+         */
+        public static final String QS_DYNAMIC_IME = "qs_dyanmic_ime";
+
+        /**
+         * Quick Settings Panel Dynamic Tiles
+         *
+         * @hide
+         */
+        public static final String QS_DYNAMIC_USBTETHER = "qs_dyanmic_usbtether";
+
+        /**
+         * Quick Settings Panel Dynamic Tiles
+         *
+         * @hide
+         */
+        public static final String QS_DYNAMIC_WIFI = "qs_dyanmic_wifi";
+
+        /**
+         * Quick Settings Quick Pulldown
+         *
+         * @hide
+         */
+        public static final String QS_QUICK_PULLDOWN = "qs_quick_pulldown";
+
+        /**
+         * Quick Settings Collapse Pane
+         *
+         * @hide
+         */
+        public static final String QS_COLLAPSE_PANEL = "qs_collapse_panel";
+
+        /**
          * Use the Notification Power Widget? (Who wouldn't!)
          *
          * @hide
@@ -2723,10 +2707,16 @@ public final class Settings {
         public static final String STATUS_BAR_IME_SWITCHER = "status_bar_ime_switcher";
 
          /**
-         * Statusbar State
+         * Expanded desktop on/off state
          * @hide
          */
         public static final String EXPANDED_DESKTOP_STATE = "expanded_desktop_state";
+
+        /**
+         * Expanded desktop style (with status bar or without status bar)
+         * @hide
+         */
+        public static final String EXPANDED_DESKTOP_STYLE = "expanded_desktop_style";
 
         /**
          * Whether to use a separate delay for "slide to unlock" and security
@@ -2779,6 +2769,12 @@ public final class Settings {
          * @hide
          */
         public static final String VOLBTN_MUSIC_CONTROLS = "volbtn_music_controls";
+
+        /**
+         * Whether or not to launch default music player when headset is connected
+         * @hide
+         */
+        public static final String HEADSET_CONNECT_PLAYER = "headset_connect_player";
 
         /**
          * Whether national data roaming should be used.
@@ -2852,6 +2848,12 @@ public final class Settings {
          */
         public static final String LOCKSCREEN_LONG_MENU_ACTION = "lockscreen_long_menu_action";
 
+         /**
+          * Always show the battery status on the lockscreen
+          * @hide
+          */
+        public static final String LOCKSCREEN_ALWAYS_SHOW_BATTERY = "lockscreen_always_show_battery";
+
         /**
          * Show the pending notification counts as overlays on the status bar
          * @hide
@@ -2904,7 +2906,7 @@ public final class Settings {
          * Whether power menu silent mode is enabled
          * @hide
          */
-        public static final String POWER_MENU_SILENT_ENABLED = "power_menu_silent_enabled";
+        public static final String POWER_MENU_SOUND_ENABLED = "power_menu_silent_enabled";
 
         /**
          * Whether to unlock the screen with the home key.  The value is boolean (1 or 0).
@@ -2919,6 +2921,7 @@ public final class Settings {
         public static final String LOCKSCREEN_VIBRATE_ENABLED = "lockscreen.vibrate_enabled";
 
         /**
+         * Show the pending notification counts as overlays on the status bar
          * Whether to enable custom rebindings of the actions performed on
          * certain key press events.
          * @hide
@@ -2959,6 +2962,12 @@ public final class Settings {
           */
          public static final String KEY_ASSIST_ACTION = "key_assist_action";
 
+        /**
+         * Weather to minimize lockscreen challenge on screen turned on
+         * @hide
+         */
+        public static final String LOCKSCREEN_MAXIMIZE_WIDGETS = "lockscreen_maximize_widgets";
+
          /**
           * Action to perform when the assistant (search) key is long-pressed. (Default is 4)
           * (See KEY_HOME_LONG_PRESS_ACTION for valid values)
@@ -2988,6 +2997,23 @@ public final class Settings {
          */
         public static final String UI_FORCE_OVERFLOW_BUTTON = "ui_force_overflow_button";
 
+         /**
+          * Volume keys control cursor in text fields (default is 0)
+          * 0 - Disabled
+          * 1 - Volume up/down moves cursor left/right
+          * 2 - Volume up/down moves cursor right/left
+          * @hide
+          */
+         public static final String VOLUME_KEY_CURSOR_CONTROL = "volume_key_cursor_control";
+
+        /**
+         * toggle to "fix" the following: (found in NotificationManagerService)
+         *  new in 4.2: if there was supposed to be a sound and we're in vibrate mode,
+         *  we always vibrate, even if no vibration was specified
+         * @hide
+         */
+        public static final String NOTIFICATION_CONVERT_SOUND_TO_VIBRATION = "convert_sound_to_vibration";
+
         /**
          * Settings to backup. This is here so that it's in the same place as the settings
          * keys and easy to update.
@@ -3006,6 +3032,8 @@ public final class Settings {
             WIFI_STATIC_NETMASK,
             WIFI_STATIC_DNS1,
             WIFI_STATIC_DNS2,
+            MMS_AUTO_RETRIEVAL,
+            MMS_AUTO_RETRIEVAL_ON_ROAMING,
             BLUETOOTH_DISCOVERABILITY,
             BLUETOOTH_DISCOVERABILITY_TIMEOUT,
             DIM_SCREEN,
@@ -3070,9 +3098,10 @@ public final class Settings {
             POWER_MENU_REBOOT_ENABLED,
             POWER_MENU_PROFILES_ENABLED,
             POWER_MENU_AIRPLANE_ENABLED,
-            POWER_MENU_SILENT_ENABLED,
+            POWER_MENU_SOUND_ENABLED,
             POWER_MENU_USER_ENABLED,
             LOCKSCREEN_VIBRATE_ENABLED,
+            LOCKSCREEN_ALWAYS_SHOW_BATTERY,
         };
 
         // Settings moved to Settings.Secure
@@ -4022,6 +4051,14 @@ public final class Settings {
          */
         public static final String LOCK_BEFORE_UNLOCK =
             "lock_before_unlock";
+
+        /**
+         * Determines the width and height of the LockPatternView widget
+         * @hide
+         */
+        public static final String LOCK_PATTERN_SIZE =
+            "lock_pattern_size";
+
         /**
          * The Logging ID (a unique 64-bit value) as a hex string.
          * Used as a pseudonymous identifier for logging.
@@ -4749,6 +4786,36 @@ public final class Settings {
                 INCALL_POWER_BUTTON_BEHAVIOR_SCREEN_OFF;
 
         /**
+         * What happens when the user presses the Home button when the
+         * phone is ringing.<br/>
+         * <b>Values:</b><br/>
+         * 1 - Nothing happens. (Default behavior)<br/>
+         * 2 - The Home button answer the current call.<br/>
+         *
+         * @hide
+         */
+        public static final String RING_HOME_BUTTON_BEHAVIOR = "ring_home_button_behavior";
+
+        /**
+         * RING_HOME_BUTTON_BEHAVIOR value for "do nothing".
+         * @hide
+         */
+        public static final int RING_HOME_BUTTON_BEHAVIOR_DO_NOTHING = 0x1;
+
+        /**
+         * RING_HOME_BUTTON_BEHAVIOR value for "answer".
+         * @hide
+         */
+        public static final int RING_HOME_BUTTON_BEHAVIOR_ANSWER = 0x2;
+
+        /**
+         * RING_HOME_BUTTON_BEHAVIOR default value.
+         * @hide
+         */
+        public static final int RING_HOME_BUTTON_BEHAVIOR_DEFAULT =
+                RING_HOME_BUTTON_BEHAVIOR_DO_NOTHING;
+
+        /**
          * The current night mode that has been selected by the user.  Owned
          * and controlled by UiModeManagerService.  Constants are as per
          * UiModeManager.
@@ -5064,6 +5131,13 @@ public final class Settings {
          * @hide
          */
         public static final String POWER_SOUNDS_ENABLED = "power_sounds_enabled";
+
+        /**
+         * URI for the "wireless charging started" sound.
+         * @hide
+         */
+        public static final String WIRELESS_CHARGING_STARTED_SOUND =
+                "wireless_charging_started_sound";
 
         /**
          * Whether we keep the device on while the device is plugged in.
@@ -6098,6 +6172,12 @@ public final class Settings {
          * @hide
          */
         public static final String DOCK_AUDIO_MEDIA_ENABLED = "dock_audio_media_enabled";
+
+        /**
+         * Persisted safe headphone volume management state by AudioService
+         * @hide
+         */
+        public static final String AUDIO_SAFE_VOLUME_STATE = "audio_safe_volume_state";
 
         /**
          * Settings to backup. This is here so that it's in the same place as the settings

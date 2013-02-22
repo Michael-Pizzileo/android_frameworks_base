@@ -43,7 +43,7 @@ public class UserTile extends QuickSettingsTile {
 
         mTileLayout = R.layout.quick_settings_tile_user;
 
-        onClick = new View.OnClickListener() {
+        mOnClick = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mQsc.mBar.collapseAllPanels(true);
@@ -52,7 +52,7 @@ public class UserTile extends QuickSettingsTile {
                 if (um.getUsers(true).size() > 1) {
                     try {
                         WindowManagerGlobal.getWindowManagerService().lockNow(
-                                LockPatternUtils.USER_SWITCH_LOCK_OPTIONS);
+                                null);
                     } catch (RemoteException e) {
                         Log.e(TAG, "Couldn't show user switcher", e);
                     }
@@ -64,18 +64,13 @@ public class UserTile extends QuickSettingsTile {
                 }
             }
         };
+        qsc.registerAction(Intent.ACTION_USER_SWITCHED, this);
+        qsc.registerAction(ContactsContract.Intents.ACTION_PROFILE_CHANGED, this);
+    }
 
-        mBroadcastReceiver = new BroadcastReceiver() {
-
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                queryForUserInformation();
-            }
-        };
-
-        mIntentFilter = new IntentFilter();
-        mIntentFilter.addAction(Intent.ACTION_USER_SWITCHED);
-        mIntentFilter.addAction(ContactsContract.Intents.ACTION_PROFILE_CHANGED);
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        queryForUserInformation();
     }
 
     @Override

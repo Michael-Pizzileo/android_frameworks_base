@@ -22,6 +22,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.hardware.usb.IUsbManager;
 import android.hardware.usb.UsbAccessory;
 import android.hardware.usb.UsbDevice;
@@ -30,6 +31,7 @@ import android.os.ParcelFileDescriptor;
 import android.os.UserHandle;
 import android.util.SparseArray;
 
+import com.android.internal.annotations.GuardedBy;
 import com.android.internal.util.IndentingPrintWriter;
 
 import java.io.File;
@@ -52,7 +54,7 @@ public class UsbService extends IUsbManager.Stub {
     private final Object mLock = new Object();
 
     /** Map from {@link UserHandle} to {@link UsbSettingsManager} */
-    // @GuardedBy("mLock")
+    @GuardedBy("mLock")
     private final SparseArray<UsbSettingsManager>
             mSettingsByUser = new SparseArray<UsbSettingsManager>();
 
@@ -77,6 +79,8 @@ public class UsbService extends IUsbManager.Stub {
         if (new File("/sys/class/android_usb").exists()) {
             mDeviceManager = new UsbDeviceManager(context);
         }
+        else if(new File(Resources.getSystem().getString(com.android.internal.R.string.config_legacyUmsLunFile)).exists())
+            mDeviceManager = new LegacyUsbDeviceManager(context);
 
         setCurrentUser(UserHandle.USER_OWNER);
 

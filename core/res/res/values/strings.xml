@@ -341,7 +341,8 @@
     <!-- Reboot Progress Dialog. This is shown if the user chooses to reboot the phone. -->
     <string name="reboot_progress">Rebooting\u2026</string>
     <!-- Reboot Confirmation Dialog.  When the user chooses to reboot the phone, there will be a confirmation dialog.  This is the message. -->
-    <string name="reboot_confirm">Your phone will reboot.</string>
+    <string name="reboot_confirm" product="tablet">Your tablet will reboot.</string>
+    <string name="reboot_confirm" product="default">Your phone will reboot.</string>
 
     <!-- Spoken description for ringer silent option. [CHAR LIMIT=NONE] -->
     <string name="silent_mode_silent">Ringer off</string>
@@ -1447,6 +1448,16 @@
     <string name="permdesc_vibrate">Allows the app to control the vibrator.</string>
 
     <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_fm_radio_receiver">control FM receiver</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_fm_radio_receiver">Allows the application to control the FM receiver.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permlab_fm_radio_transmitter">control FM transmitter</string>
+    <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
+    <string name="permdesc_fm_radio_transmitter">Allows the application to control the FM transmitter.</string>
+
+    <!-- Title of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permlab_flashlight">control flashlight</string>
     <!-- Description of an application permission, listed so the user can choose whether they want to allow the application to do this. -->
     <string name="permdesc_flashlight">Allows the app to control the flashlight.</string>
@@ -2154,6 +2165,7 @@
     <!-- When the lock screen is showing and the phone plugged in, and the battery
          is not fully charged, show the current charge %.  -->
     <string name="lockscreen_plugged_in">Charging, <xliff:g id="number">%d</xliff:g><xliff:g id="percent">%%</xliff:g></string>
+    <string name="lockscreen_discharging">Discharging, <xliff:g id="number">%d</xliff:g><xliff:g id="percent">%%</xliff:g></string>
     <!-- When the lock screen is showing, the phone is plugged in and the battery is fully
          charged, say that it is charged. -->
     <string name="lockscreen_charged">Charged</string>
@@ -2161,8 +2173,8 @@
     <string name="lockscreen_battery_short"><xliff:g id="number">%d</xliff:g><xliff:g id="percent">%%</xliff:g></string>
 
     <!-- When the lock screen is showing and the battery is low, warn user to plug
-         in the phone soon. -->
-    <string name="lockscreen_low_battery">Connect your charger.</string>
+         in the phone soon and show current percentage. -->
+    <string name="lockscreen_low_battery">Connect your charger, <xliff:g id="number">%d</xliff:g><xliff:g id="percent">%%</xliff:g></string>
 
     <!-- Shown in the lock screen when there is no SIM card. -->
     <string name="lockscreen_missing_sim_message_short">No SIM card</string>
@@ -2893,6 +2905,21 @@
     <!-- Appened to express the value is this unit of time. -->
     <string name="years">years</string>
 
+    <!-- Phrase describing a time duration using seconds [CHAR LIMIT=16] -->
+    <plurals name="duration_seconds">
+        <item quantity="one">1 second</item>
+        <item quantity="other"><xliff:g id="count">%d</xliff:g> seconds</item>
+    </plurals>
+    <!-- Phrase describing a time duration using minutes [CHAR LIMIT=16] -->
+    <plurals name="duration_minutes">
+        <item quantity="one">1 minute</item>
+        <item quantity="other"><xliff:g id="count">%d</xliff:g> minutes</item>
+    </plurals>
+    <!-- Phrase describing a time duration using hours [CHAR LIMIT=16] -->
+    <plurals name="duration_hours">
+        <item quantity="one">1 hour</item>
+        <item quantity="other"><xliff:g id="count">%d</xliff:g> hours</item>
+    </plurals>
 
     <!-- Title for error alert when a video cannot be played.  it can be used by any app. -->
     <string name="VideoView_error_title">Video problem</string>
@@ -3134,7 +3161,7 @@
     <!-- Choice in the ringtone picker.  If chosen, the default ringtone will be used. This fills in the actual ringtone's title into the message. -->
     <string name="ringtone_default_with_actual">Default ringtone (<xliff:g id="actual_ringtone">%1$s</xliff:g>)</string>
     <!-- Choice in the ringtone picker.  If chosen, there will be silence instead of a ringtone played. -->
-    <string name="ringtone_silent">Silent</string>
+    <string name="ringtone_silent">None</string>
     <!-- The title of the ringtone picker dialog. -->
     <string name="ringtone_picker_title">Ringtones</string>
     <!-- If there is ever a ringtone set for some setting, but that ringtone can no longer be resolved, t his is shown instead.  For example, if the ringtone was on a SD card and it had been removed, this woudl be shown for ringtones on that SD card. -->
@@ -3321,9 +3348,9 @@
     <!-- See EXTMEDIA_FORMAT.  EXTMEDIA_FORMAT_DIALOG:  After the user selects the notification, a dialog is shown asking if he wants to format the SD card.  This is the title. -->
     <string name="extmedia_format_title" product="default">Format SD card?</string>
     <!-- See EXTMEDIA_FORMAT.   This is the message. [CHAR LIMIT=NONE] -->
-    <string name="extmedia_format_message" product="nosdcard">All files stored in your USB storage will be erased. This action can\'t be reversed!</string>
+    <string name="extmedia_format_message" product="nosdcard">All files stored in your USB storage (under path \'%1$s\') will be erased. This action can\'t be reversed!</string>
     <!-- See EXTMEDIA_FORMAT.   This is the message. -->
-    <string name="extmedia_format_message" product="default">All data on your card will be lost.</string>
+    <string name="extmedia_format_message" product="default">All data on your card (under path \'%1$s\') will be erased. This action can\'t be reversed!</string>
     <!-- See EXTMEDIA_FORMAT.    This is the button text to format the sd card. -->
     <string name="extmedia_format_button_format">Format</string>
 
@@ -3751,6 +3778,9 @@
     <!-- Storage description for the SD card. [CHAR LIMIT=NONE] -->
     <string name="storage_sd_card">SD card</string>
 
+    <!-- Storage description for the SD card on the dock. [CHAR LIMIT=NONE] -->
+    <string name="storage_sd_dock_card">Dock SD card</string>
+
     <!-- Storage description for USB storage. [CHAR LIMIT=NONE] -->
     <string name="storage_usb">USB storage</string>
 
@@ -4054,4 +4084,7 @@
     <!-- label for item that opens the profile choosing dialog -->
     <string name="global_action_choose_profile">Profile</string>
 
+    <!-- Hardware Rotation lock string -->
+    <string name="toast_rotation_unlocked">Display rotation unlocked</string>
+    <string name="toast_rotation_locked">Display rotation locked</string>
 </resources>

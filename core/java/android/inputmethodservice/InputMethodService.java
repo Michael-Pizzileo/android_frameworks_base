@@ -248,6 +248,20 @@ public class InputMethodService extends AbstractInputMethodService {
      */
     public static final int IME_VISIBLE = 0x2;
 
+    int mVolumeKeyCursorControl = 0;
+    /**
+     * @hide
+     */
+    public static final int VOLUME_CURSOR_OFF = 0;
+    /**
+     * @hide
+     */
+    public static final int VOLUME_CURSOR_ON = 1;
+    /**
+     * @hide
+     */
+    public static final int VOLUME_CURSOR_ON_REVERSE = 2;
+
     InputMethodManager mImm;
     
     int mTheme = 0;
@@ -930,11 +944,13 @@ public class InputMethodService extends AbstractInputMethodService {
      */
     public void onConfigureWindow(Window win, boolean isFullscreen,
             boolean isCandidatesOnly) {
-        if (isFullscreen) {
-            mWindow.getWindow().setLayout(MATCH_PARENT, MATCH_PARENT);
-        } else {
-            mWindow.getWindow().setLayout(MATCH_PARENT, WRAP_CONTENT);
+        final int currentHeight = mWindow.getWindow().getAttributes().height;
+        final int newHeight = isFullscreen ? MATCH_PARENT : WRAP_CONTENT;
+        if (mIsInputViewShown && currentHeight != newHeight) {
+            Log.w(TAG, "Window size has been changed. This may cause jankiness of resizing window: "
+                    + currentHeight + " -> " + newHeight);
         }
+        mWindow.getWindow().setLayout(MATCH_PARENT, newHeight);
     }
     
     /**
@@ -997,10 +1013,11 @@ public class InputMethodService extends AbstractInputMethodService {
     }
     
     void updateExtractFrameVisibility() {
-        int vis;
+        final int vis;
         if (isFullscreenMode()) {
             vis = mExtractViewHidden ? View.INVISIBLE : View.VISIBLE;
-            mExtractFrame.setVisibility(View.VISIBLE);
+            // "vis" should be applied for the extract frame as well in the fullscreen mode.
+            mExtractFrame.setVisibility(vis);
         } else {
             vis = View.VISIBLE;
             mExtractFrame.setVisibility(View.GONE);
@@ -1757,6 +1774,26 @@ public class InputMethodService extends AbstractInputMethodService {
             }
             return false;
         }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP) {
+            mVolumeKeyCursorControl = Settings.System.getInt(getContentResolver(),
+                    Settings.System.VOLUME_KEY_CURSOR_CONTROL, 0);
+            if (isInputViewShown() && (mVolumeKeyCursorControl != VOLUME_CURSOR_OFF)) {
+                sendDownUpKeyEvents((mVolumeKeyCursorControl == VOLUME_CURSOR_ON_REVERSE)
+                        ? KeyEvent.KEYCODE_DPAD_RIGHT : KeyEvent.KEYCODE_DPAD_LEFT);
+                return true;
+            }
+            return false;
+        }
+        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            mVolumeKeyCursorControl = Settings.System.getInt(getContentResolver(),
+                    Settings.System.VOLUME_KEY_CURSOR_CONTROL, 0);
+            if (isInputViewShown() && (mVolumeKeyCursorControl != VOLUME_CURSOR_OFF)) {
+                sendDownUpKeyEvents((mVolumeKeyCursorControl == VOLUME_CURSOR_ON_REVERSE)
+                        ? KeyEvent.KEYCODE_DPAD_LEFT : KeyEvent.KEYCODE_DPAD_RIGHT);
+                return true;
+            }
+            return false;
+        }
         return doMovementKey(keyCode, event, MOVEMENT_DOWN);
     }
 
@@ -1802,7 +1839,15 @@ public class InputMethodService extends AbstractInputMethodService {
                 && !event.isCanceled()) {
             return handleBack(true);
         }
-        
+        if (event.getKeyCode() == KeyEvent.KEYCODE_VOLUME_UP
+                 || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            mVolumeKeyCursorControl = Settings.System.getInt(getContentResolver(),
+                    Settings.System.VOLUME_KEY_CURSOR_CONTROL, 0);
+            if (isInputViewShown() && (mVolumeKeyCursorControl != VOLUME_CURSOR_OFF)) {
+                return true;
+            }
+            return false;
+        }
         return doMovementKey(keyCode, event, MOVEMENT_UP);
     }
 
